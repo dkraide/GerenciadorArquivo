@@ -78,7 +78,7 @@ namespace WEB.Controllers
         {
             if(file == null)
             {
-                return BadRequest("Arquivo invalido");
+                return BadRequest("Invalid File");
             }
             using (var stream = new MemoryStream())
             using (HttpClient client = new HttpClient())
