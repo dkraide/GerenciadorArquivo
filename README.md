@@ -9,5 +9,6 @@ Passo 3:
 Dentro do projeto Communication, na pasta Constants na classe Consts.cs altere o campo URLAPI com a url da API quando executada
 O projeto WEB utiliza a API para envio e tratamento dos arquivos. Se nao configurar esse campo, nao conseguira fazer upload de arquivos.
 
-Agora e so inicializar ambos os projetos.
+Passo 4:
+Ao efetuar o passo a passo. Sera criado automaticamente um usuario com username "daniel123" e senha "123456" com privilegios de admin, podendo a partir dele criar novos usuarios.
 
