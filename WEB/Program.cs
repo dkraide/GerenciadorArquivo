@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration["ConnectionStrings:Connection"];
 builder.Services.AddDbContext<Context>(options =>
 {
-    options.UseSqlServer(connectionString, p => p.MigrationsAssembly("Shared"));
+    options.UseSqlServer(connectionString, p => p.MigrationsAssembly("Communication"));
 });
 
 

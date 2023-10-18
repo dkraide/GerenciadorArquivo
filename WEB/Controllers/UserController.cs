@@ -5,8 +5,6 @@ using Communication.Services;
 using Communication.Contexts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using AutoMapper;
 
 namespace WEB.Controllers
 {

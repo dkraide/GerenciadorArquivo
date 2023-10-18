@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Communication.Migrations
 {
     /// <inheritdoc />
@@ -31,9 +33,9 @@ namespace Communication.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
@@ -155,12 +157,12 @@ namespace Communication.Migrations
                 name: "File",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ContentXML = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -172,6 +174,25 @@ namespace Communication.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "1", "1", "Admin", "ADMIN" },
+                    { "2", "2", "Normal", "NORMAL" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "User",
+                columns: new[] { "Id", "ConcurrencyStamp", "LockoutEnabled", "LockoutEnd", "Name", "NormalizedUserName", "PasswordHash", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "42fb923f-0cb6-4df0-96b8-9aa7141a4200", "7831dd0c-de10-4368-8f5e-dbf0442691f9", true, null, "Daniel Kriade", "DANIEL123", "AQAAAAIAAYagAAAAECg2WVF3Xpo6LRu+LhBng388Cxa5FTGW3oga6qhBdFgIasEu9drf7IEQrKTE6SjsBw==", "RXBL52C6EPPSYEXRGMGY476RLRDQTOTF", false, "daniel123" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[] { "1", "42fb923f-0cb6-4df0-96b8-9aa7141a4200" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
