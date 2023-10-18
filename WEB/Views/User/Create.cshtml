@@ -1,0 +1,21 @@
+﻿@model Communication.Models.MUser
+<h2>Cadastro</h2>
+<form asp-action="Create" asp-controller="User">
+    <div class="row">
+        <div class="form-group col-sm-4">
+            <label>Nome Completo</label>
+            <input class="form-control" placeholder="Nome Completo" asp-for="Name" />
+        </div>
+        <div class="form-group col-sm-4">
+            <label>Nome de Usuario</label>
+            <input class="form-control" placeholder="Usuario" asp-for="UserName" />
+            @Html.ValidationMessageFor(p => p.UserName,"", new {@class = "text-danger"})
+        </div>
+        <div class="form-group col-sm-4">
+            <label>Senha</label>
+            <input class="form-control" placeholder="Senha" asp-for="PasswordHash" />
+            @Html.ValidationMessageFor(p => p.PasswordHash,"", new {@class = "text-danger"})
+        </div>
+    </div>
+        <button type="submit" class="btn btn-success mt-1">Cadastrar</button>
+</form>

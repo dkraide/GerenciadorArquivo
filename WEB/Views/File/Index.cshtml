@@ -1,0 +1,83 @@
+﻿@using Communication.Models;
+<div class="container">
+    <h3>Arquivos Enviados</h3>
+    <button class="btn btn-success col-3" onclick="uploadFile()" style="margin-top:10px;">Upload de Arquivo</button>
+    <hr />
+    <input id="search" class="input-form" placeholder="Pesquisar" onchange="loadFiles()"/>
+    <hr />
+    <table id="tb" class="table table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>#</th>
+                <th>Arquivo</th>
+                <th>Tipo</th>
+                <th>Data</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody id="rows">
+        </tbody>
+    </table>
+</div>
+@section Scripts{
+<script>
+    $(document).ready(function () {
+        loadFiles();
+    })
+    var files = [];
+    function uploadFile(id) {
+        var input = document.createElement("input");
+        input.type = "file";
+        input.click();
+        input.onchange = (e) => {
+            const target = e.target;
+            const files = target.files;
+            var formData = new FormData();
+            formData.append('file', files[0], files[0].name);
+            if (id) {
+                formData.append('fileId', id);
+            }
+            $.ajax({
+                url: '/File/Upload',
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: (res) => {
+                    window.location.reload();
+                }
+            })
+        }
+    }
+
+    function loadFiles() {
+        if (files.length == 0) {
+            $.ajax({
+                url: '/File/Get',
+                type: 'GET',
+                async: false,
+                success: (res) => {
+                    files = res;
+                }
+            });
+        }
+        var searchString = $(`#search`).val();
+        $(`#rows`).html('');
+        files.forEach((item) => {
+            var str = (item.fileName + item.createdAt.toString() + item.user.name).toUpperCase();
+            if (str.includes(searchString.toUpperCase())) {
+                var row = `<tr><td><a href="/File/Delete?id=${item.id}" class="btn btn-danger">Excluir</a>
+                                    <button type="button" onclick="uploadFile('${item.id}')"  class="btn btn-warning">Editar</button>
+                                        <a href="/File/Visualize?id=${item.id}" class="btn btn-primary">Visualizar</a>
+                                </td>
+                                        <td>${item.fileName}</td>
+                                            <td>${item.type}</td>
+                                            <td>${item.createdAt.toString()}</td>
+                                            <td>${item.user.name}</td>
+                    </tr>`
+                $(`#rows`).append(row);
+            }
+        })
+    }
+</script>
+}

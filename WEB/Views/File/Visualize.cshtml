@@ -1,0 +1,34 @@
+﻿@model Communication.Models.MFile
+<div>
+    <h3>Visualizar arquivo</h3>
+    <hr />
+    <form method="post">
+        <div class="row">
+            <div class="form-group col-sm-10">
+                <label>Arquivo</label>
+                <input readonly class="form-control" placeholder="Arquivo" value="@Model.FileName" />
+            </div>
+            <div class="form-group col-sm-2">
+                <label>Tipo</label>
+                <input readonly class="form-control" placeholder="Arquivo" value="@Model.Type" />
+            </div>
+            <div class="form-group col-sm-2">
+                <label>Criado</label>
+                <input readonly class="form-control" placeholder="Data" value="@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")" />
+            </div>
+            <div class="form-group col-sm-2">
+                <label>Usuario</label>
+                <input readonly class="form-control" placeholder="Data" value="@Model.User?.Name" />
+            </div>
+            @if (!string.IsNullOrEmpty(Model.ContentXML))
+            {
+                <div class="form-group col-sm-8">
+                    <label>Colunas XML separadas por "--"</label>
+                    <input readonly class="form-control" placeholder="Data" value="@Model.ContentXML" />
+                </div>
+            }
+        </div>
+        <hr>
+        <a type="button" class="btn btn-primary" href="/File/Index">Voltar</a>
+    </form>
+</div>

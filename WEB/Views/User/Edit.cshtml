@@ -1,0 +1,58 @@
+﻿@model Communication.DTOs.UserDTO
+<h2>Editar Usuario</h2>
+<form asp-action="Edit" asp-controller="User">
+    <input hidden asp-for="Id" id="userId"/>
+    <div class="row">
+        <div class="form-group col-sm-4">
+            <label>Nome Completo</label>
+            <input class="form-control" placeholder="Nome Completo" asp-for="Name" />
+        </div>
+        <div class="form-group col-sm-4">
+            <label>Nome de Usuario</label>
+            <input class="form-control" placeholder="Usuario" asp-for="UserName" />
+            @Html.ValidationMessageFor(p => p.UserName,"", new {@class = "text-danger"})
+        </div>
+    </div>
+    <button type="submit" class="btn btn-success mt-1">Cadastrar</button>
+</form>
+<h3>Alterar Senha</h3>
+<form  asp-action="UpdatePassword" asp-controller="User">
+    <div class="row">
+        <div class="form-group col-sm-4">
+            <label>Nova Senha</label>
+            <input id="password" class="form-control" placeholder="Nova Senha"  />
+        </div>
+        <div class="form-group col-sm-4">
+            <label>Confirme a senha</label>
+            <input id="confirmPassword" class="form-control" placeholder="Confirme"  />
+            @Html.ValidationMessageFor(p => p.UserName,"", new {@class = "text-danger"})
+        </div>
+    </div>
+    <button type="button" onclick="updatePassword()" class="btn btn-warning mt-1">Alterar Senha</button>
+</form>
+<script>
+    function updatePassword(){
+        const userId = $(`#userId`).val();
+        const password = $(`#password`).val();
+        const confirmPassword = $(`#confirmPassword`).val();
+        if (!password || password.length <= 5|| password != confirmPassword) {
+            console.log(password);
+            console.log(confirmPassword);
+            alert(`Senha invalida`);
+            return;
+        }
+        $.ajax({
+            method: 'put',
+            url:'/User/UpdatePassword',
+            data: { id: userId, password: password },
+            async: false,
+            success: (v) => {
+                alert(`Senha alterada com sucesso!`);
+            },
+            error: (err) => {
+                alert(`Erro ao atualizar senha. ${err}`)
+            }
+        })
+    }
+
+</script>
