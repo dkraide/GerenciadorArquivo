@@ -20,7 +20,7 @@ namespace Communication.Utils
                 return null;
             var res = header.Split(' ')[1];
             var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(res;
+            var jwtSecurityToken = handler.ReadJwtToken(res);
             var jti = jwtSecurityToken.Claims.First(claim => claim.Type == "unique_name").Value;
             return jti;
         }
