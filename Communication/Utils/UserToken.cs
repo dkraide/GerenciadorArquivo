@@ -1,4 +1,5 @@
-﻿using Communication.Models;
+﻿using Communication.DTOs;
+using Communication.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,6 @@ namespace Communication.Utils
     {
         public string Token { get; set; }
         public DateTime Expiration { get; set; }
-        public MUser User { get; set; }
+        public UserDTO User { get; set; }
     }
 }

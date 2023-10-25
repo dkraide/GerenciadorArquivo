@@ -48,5 +48,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=User}/{action=Login}");
+    pattern: "{controller=File}/{action=index}");
 app.Run();

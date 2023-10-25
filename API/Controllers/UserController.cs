@@ -40,16 +40,14 @@ namespace API.Controllers
 
         [HttpPost("Login")]
         [AllowAnonymous]
-        public async Task<ActionResult<object>> Login([FromBody] JObject Data)
+        public async Task<ActionResult<object>> Login([FromBody] UserLogin Data)
         {
-            var userName = Data["userName"].ToObject<string>();
-            var password = Data["password"].ToObject<string>();
 
-            var user = await _userManager.FindByNameAsync(userName);
+            var user = await _userManager.FindByNameAsync(Data.UserName);
             PasswordHasher<MUser> passwordHasher = new PasswordHasher<MUser>();
             if (user != null)
             {
-                if (passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password) != PasswordVerificationResult.Failed)
+                if (passwordHasher.VerifyHashedPassword(user, user.PasswordHash, Data.Password) != PasswordVerificationResult.Failed)
                 {
                     return await BuildToken(user);
                 }
@@ -93,7 +91,14 @@ namespace API.Controllers
             {
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
                 Expiration = expiration,
-                User = userInfo,
+                User = new UserDTO
+                {
+                    Email = userInfo.Email,
+                    Files  = null,
+                    Id = userInfo.Id,
+                    Name = userInfo.Name,
+                    UserName = userInfo.UserName,
+                },
             };
         }
 
@@ -172,5 +177,10 @@ namespace API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+    }
+    public class UserLogin
+    {
+        public string UserName { get; set;}
+        public string Password { get; set; }
     }
 }

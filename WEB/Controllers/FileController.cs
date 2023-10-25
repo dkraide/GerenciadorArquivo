@@ -1,6 +1,8 @@
-﻿using Communication.Constants;
+﻿using Azure;
+using Communication.Constants;
 using Communication.Contexts;
 using Communication.Models;
+using Communication.Models.NFeModel;
 using Communication.Services;
 using Communication.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -37,15 +39,6 @@ namespace WEB.Controllers
             MFile? file = _fileService.Get(id);
             if (file == null)
                 return RedirectToAction("Index");
-            return View(file);
-        }
-        [HttpGet]
-        public IActionResult Visualize(string id)
-        {
-            MFile? file = _fileService.Get(id);
-            if (file == null)
-                return RedirectToAction("Index");
-
             return View(file);
         }
 
@@ -112,7 +105,7 @@ namespace WEB.Controllers
 
                 }
                 var err = await response.Content.ReadAsStringAsync();
-                return BadRequest(response.StatusCode);
+                return BadRequest(err);
             }
         }
 
@@ -121,6 +114,53 @@ namespace WEB.Controllers
         {
             var files = await _fileService.GetFiles(User.FindFirstValue(ClaimTypes.NameIdentifier));
             return Ok(files);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetXMLObject(string fileId)
+        {
+            if (fileId == null)
+            {
+                return BadRequest("Invalid File");
+            }
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Token", $"{User.FindFirstValue(ClaimTypes.NameIdentifier)}");
+                string url = $"{Consts.URLAPI}/File/GetXMLObject?fileId={fileId}";
+                var response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    var obj = JsonConvert.DeserializeObject(result);
+                    return Ok(obj);
+                }
+                return BadRequest(response.StatusCode);
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> DownloadFile(string fileId)
+        {
+            if (fileId == null)
+            {
+                return BadRequest("Invalid File");
+            }
+            MFile? file = _fileService.Get(fileId);
+            if (file == null)
+                return RedirectToAction("Index");
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Token", $"{User.FindFirstValue(ClaimTypes.NameIdentifier)}");
+                string url = $"{Consts.URLAPI}/File/DownloadFile?fileId={fileId}";
+                var response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsByteArrayAsync();
+                    return File(result, "application/octet-stream", file.FileName);
+                }
+                var err = await response.Content.ReadAsStringAsync();
+                return BadRequest(err);
+            }
         }
 
     }

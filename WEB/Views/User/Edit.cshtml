@@ -13,7 +13,10 @@
             @Html.ValidationMessageFor(p => p.UserName,"", new {@class = "text-danger"})
         </div>
     </div>
-    <button type="submit" class="btn btn-success mt-1">Cadastrar</button>
+    <div class="d-flex justify-content-between mt-3 mb-3">
+        <button type="submit" class="btn btn-success">Cadastrar</button>
+    </div>
+    
 </form>
 <h3>Alterar Senha</h3>
 <form  asp-action="UpdatePassword" asp-controller="User">
@@ -28,7 +31,10 @@
             @Html.ValidationMessageFor(p => p.UserName,"", new {@class = "text-danger"})
         </div>
     </div>
-    <button type="button" onclick="updatePassword()" class="btn btn-warning mt-1">Alterar Senha</button>
+    <div class="d-flex justify-content-between mt-3 mb-3">
+        <button type="button" onclick="updatePassword()" class="btn btn-warning" >Alterar Senha</button>
+    </div>
+   
 </form>
 <script>
     function updatePassword(){

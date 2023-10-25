@@ -2,6 +2,7 @@
 using Communication.Contexts;
 using Communication.DTOs;
 using Communication.Models;
+using Communication.Models.NFeModel;
 using Communication.Services;
 using Communication.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -37,37 +38,46 @@ namespace API.Controllers
         [HttpPost("Upload")]
         public IActionResult Upload(IFormFile file)
         {
-            if (file == null || file.Length <= 0)
-                return BadRequest("Invalid file");
-
-
-            var userId = User.Claims.Where(c => c.Type == "id").FirstOrDefault()?.Value;
-            if (userId == null)
-                return Unauthorized();
-
-            MFile mFile = new MFile()
+            try
             {
-                CreatedAt = DateTime.Now,
-                FileName = file.FileName,
-                Type = Path.GetExtension(file.FileName),
-                UserId = userId,
-            };
-            if (mFile.Type == ".xml")
-                mFile.ContentXML = GetXMLItens(file);
-            else
-                mFile.ContentXML = null;
-            _fileService.Create(mFile);
-            var userFolder = Helpers.GetUserFolder(userId);
-            var filePath = Helpers.GetFilePath(userFolder, mFile.FileName, mFile.Id);
-            if (!Directory.Exists(userFolder))
-            {
-                Directory.CreateDirectory(userFolder);   
+                if (file == null || file.Length <= 0)
+                    throw new Exception("Invalid file");
+
+
+                var userId = User.Claims.Where(c => c.Type == "id").FirstOrDefault()?.Value;
+                if (userId == null)
+                    return Unauthorized();
+
+                MFile mFile = new MFile()
+                {
+                    CreatedAt = DateTime.Now,
+                    FileName = file.FileName,
+                    Type = Path.GetExtension(file.FileName),
+                    UserId = userId,
+                };
+                if (mFile.Type == ".xml")
+                {
+                    var obj = GenerateObject(null, file);
+                    if (obj == null)
+                        throw new Exception("Non-standard XML NF-e");
+                }
+                _fileService.Create(mFile);
+                var userFolder = Helpers.GetUserFolder(userId);
+                var filePath = Helpers.GetFilePath(userFolder, mFile.FileName, mFile.Id);
+                if (!Directory.Exists(userFolder))
+                {
+                    Directory.CreateDirectory(userFolder);
+                }
+                using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate))
+                {
+                    file.CopyTo(fs);
+                }
+                return Ok(mFile);
             }
-            using(FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate))
+            catch(Exception ex)
             {
-                file.CopyTo(fs);
+                return BadRequest(ex.Message);
             }
-            return Ok(mFile);
         }
         [HttpDelete("Delete")]
         public IActionResult Delete(string fileId)
@@ -98,45 +108,53 @@ namespace API.Controllers
         [HttpPut("Update")]
         public IActionResult Update(IFormFile file, [FromForm]string fileId)
         {
-            if (file == null || file.Length <= 0)
-                return BadRequest("Invalid File");
-
-
-            var userId = User.Claims.Where(c => c.Type == "id").FirstOrDefault()?.Value;
-            if (userId == null)
-                return Unauthorized();
-
-            MFile? mFile = _fileService.Get(fileId);
-
-            if (mFile == null)
-                return BadRequest("Entry no found in database");
-
-            DeleteFile(mFile);
-
-            mFile.CreatedAt = DateTime.Now;
-            mFile.FileName = file.FileName;
-            mFile.Type = Path.GetExtension(file.FileName);
-            mFile.UserId = userId;
-
-            if (mFile.Type == ".xml")
-                mFile.ContentXML = GetXMLItens(file);
-            else
-                mFile.ContentXML = null;
-
-            _fileService.Update(mFile);
-
-            var userFolder = Helpers.GetUserFolder(userId);
-            var filePath = Helpers.GetFilePath(userFolder, mFile.FileName, mFile.Id);
-            if (!Directory.Exists(userFolder))
+            try
             {
-                Directory.CreateDirectory(userFolder);
-            }
+                if (file == null || file.Length <= 0)
+                    throw new Exception("Invalid File");
 
-            using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate))
-            {
-                file.CopyTo(fs);
+
+                var userId = User.Claims.Where(c => c.Type == "id").FirstOrDefault()?.Value;
+                if (userId == null)
+                    return Unauthorized();
+
+                MFile? mFile = _fileService.Get(fileId);
+
+                if (mFile == null)
+                    throw new Exception("Entry no found in database");
+
+                DeleteFile(mFile);
+                if (mFile.Type == Path.GetExtension(file.FileName))
+                {
+                    var obj = GenerateObject(null, file);
+                    if (obj == null)
+                        throw new Exception("Non-standard XML NF-e");
+                }
+                mFile.CreatedAt = DateTime.Now;
+                mFile.FileName = file.FileName;
+                mFile.Type = Path.GetExtension(file.FileName);
+                mFile.UserId = userId;
+
+                
+                _fileService.Update(mFile);
+
+                var userFolder = Helpers.GetUserFolder(userId);
+                var filePath = Helpers.GetFilePath(userFolder, mFile.FileName, mFile.Id);
+                if (!Directory.Exists(userFolder))
+                {
+                    Directory.CreateDirectory(userFolder);
+                }
+
+                using (FileStream fs = new FileStream(filePath, FileMode.OpenOrCreate))
+                {
+                    file.CopyTo(fs);
+                }
+                return Ok(mFile);
             }
-            return Ok(mFile);
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("GetAll")]
@@ -182,42 +200,60 @@ namespace API.Controllers
 
 
         }
-        private string GetXMLItens(IFormFile file)
+
+        [HttpGet("GetXMLObject")]
+        public IActionResult GetXMLObject(string fileId)
         {
             try
             {
-                using(var reader = new StreamReader(file.OpenReadStream()))
+                var userId = User.Claims.Where(c => c.Type == "id").FirstOrDefault()?.Value;
+                if (userId == null)
+                    return Unauthorized();
+
+                if (string.IsNullOrEmpty(fileId))
+                    throw new Exception("Invalid object");
+
+                var file = _fileService.Get(fileId);
+                if (file == null)
+                    throw new Exception("Entry not found in Database");
+
+
+                var userFolder = Helpers.GetUserFolder(file.UserId);
+                var filePath = Helpers.GetFilePath(userFolder, file.FileName, file.Id);
+
+                string xml = "";
+                using (StreamReader sr = new StreamReader(filePath))
                 {
-                    var str = reader.ReadToEnd();
-                    if (str == null)
-                        return "INVALID XML FILE";
-                    XmlDocument doc = new XmlDocument();
-                    doc.LoadXml(str);
-                    if (doc.HasChildNodes)
-                    {
-                        var s = GetColumns(doc.ChildNodes);
-                        return s;
-                    }
-                    return "Empty";
+                    xml = sr.ReadToEnd();
                 }
-            }catch(Exception ex)
+                var obj = GenerateObject(xml);
+                if (obj == null)
+                    throw new Exception("XML fora do padrao NF-e");
+
+                return Ok(obj);
+            }catch( Exception ex)
             {
-                return $"Error {ex.Message}";
+                return BadRequest(ex.Message);
             }
         }
-        private string GetColumns(XmlNodeList nodes)
+        private object? GenerateObject(string xml, IFormFile? file = null)
         {
-            var str = "";
-            foreach(XmlNode x in nodes)
+            try
             {
-                if (x.Name == "#text")
-                    continue;
-
-                str += x.Name + "--";
-                if(x.HasChildNodes)
-                    str += GetColumns(x.ChildNodes);
+                string _xml = "";
+                if (file != null)
+                {
+                    using var reader = new StreamReader(file.OpenReadStream());
+                    _xml = reader.ReadToEnd();
+                }
+                else
+                    _xml = xml;
+                return Helpers.SerializeFromXMLString<NFe>(_xml);
             }
-            return str;
+            catch
+            {
+                return null;
+            }
         }
         private void DeleteFile(MFile mFile)
         {
@@ -226,6 +262,24 @@ namespace API.Controllers
 
             if (System.IO.File.Exists(filePath))
                 System.IO.File.Delete(filePath);
+        }
+        
+        [HttpGet("DownloadFile")]
+        public IActionResult DownloadFile(string fileId)
+        {
+            var file = _fileService.Get(fileId);
+            if (file == null)
+                return BadRequest("Entry not found in Database");
+
+
+            var userFolder = Helpers.GetUserFolder(file.UserId);
+            var filePath = Helpers.GetFilePath(userFolder, file.FileName, file.Id);
+
+            if (!System.IO.File.Exists(filePath))
+                return BadRequest("File not found");
+
+            var byteArray = System.IO.File.ReadAllBytes(filePath);
+            return new FileContentResult(byteArray, "application/octet-stream");
         }
     }
 }

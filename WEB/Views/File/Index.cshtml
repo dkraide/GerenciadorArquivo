@@ -1,23 +1,107 @@
 ﻿@using Communication.Models;
 <div class="container">
     <h3>Arquivos Enviados</h3>
-    <button class="btn btn-success col-3" onclick="uploadFile()" style="margin-top:10px;">Upload de Arquivo</button>
-    <hr />
-    <input id="search" class="input-form" placeholder="Pesquisar" onchange="loadFiles()"/>
+    <div class="d-flex justify-content-between">
+        <div class="col-3">
+            <input id="search" class="form-control" placeholder="Pesquisar arquivos" onkeyup="loadFiles()" />
+        </div>
+        <button class="btn btn-success" onclick="uploadFile()" >Upload de Arquivo</button>
+    </div>
+    <div id="controlSearch">
+
+    </div>
     <hr />
     <table id="tb" class="table table-hover">
-        <thead class="thead-dark">
+        <thead style="background-color:var(--bs-gray-dark);color:white;">
             <tr>
-                <th>#</th>
                 <th>Arquivo</th>
                 <th>Tipo</th>
                 <th>Data</th>
                 <th>Usuario</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody id="rows">
         </tbody>
     </table>
+</div>
+
+<div id="modal" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+       <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalToggleLabel">Visualizar XML</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Identificação</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Itens</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane" type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Totais</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+                        <table class="table table-condensed responsive-table">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">NF-e</th>
+                                </tr>
+                            </thead>
+                            <tbody style="word-break: break-word;" id="tIde">
+                                
+                            </tbody>
+                        </table>
+                        <table class="table table-condensed responsive-table">
+                            <thead>
+                                <tr>
+                                    <th width="15%"></th>
+                                    <th width="42%" >Emitente</th>
+                                    <th width="43%">Destinatario</th>
+                                </tr>
+                            </thead>
+                            <tbody style="word-break: break-word;" id="tEmiDest">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Codigo</th>
+                                    <th style="width:50%">Item</th>
+                                    <th>Quantidade</th>
+                                    <th>Vlr Un.</th>
+                                    <th>Vlr Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="overflow-auto" id="tDet">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">Totais</th>
+                                </tr>
+                            </thead>
+                            <tbody style="word-break: break-word;" id="tTotal">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary"  data-bs-dismiss="modal">Fechar</button>
+            </div>
+       </div>
+    </div>
 </div>
 @section Scripts{
 <script>
@@ -45,11 +129,20 @@
                 data: formData,
                 success: (res) => {
                     window.location.reload();
+                },
+                error: (err) => {
+                    addError(err.responseText);
                 }
             })
         }
     }
-
+    function addError(message){
+        var error = `<div id="errorAlert" class="col-12 alert alert-danger alert-dismissible show fade mt-2" role="alert">
+                <strong>Erro:</strong> <a id="message">${message}</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+        $(`#controlSearch`).html(error);
+    }
     function loadFiles() {
         if (files.length == 0) {
             $.ajax({
@@ -66,18 +159,97 @@
         files.forEach((item) => {
             var str = (item.fileName + item.createdAt.toString() + item.user.name).toUpperCase();
             if (str.includes(searchString.toUpperCase())) {
-                var row = `<tr><td><a href="/File/Delete?id=${item.id}" class="btn btn-danger">Excluir</a>
-                                    <button type="button" onclick="uploadFile('${item.id}')"  class="btn btn-warning">Editar</button>
-                                        <a href="/File/Visualize?id=${item.id}" class="btn btn-primary">Visualizar</a>
-                                </td>
-                                        <td>${item.fileName}</td>
-                                            <td>${item.type}</td>
-                                            <td>${item.createdAt.toString()}</td>
-                                            <td>${item.user.name}</td>
+                var row = `<tr><td>${item.fileName}</td>
+                               <td> ${item.type.includes('.xml') ? `<a href="#" onclick="loadXML('${item.id}')">${item.type.replace('.', '').toUpperCase()}</a>` :  item.type.replace('.', '').toUpperCase()}</td>
+                                       <td>${new Date(item.createdAt).toString('dd/MM/yyyy HH:mm')}</td>
+                               <td>${item.user.name}</td>
+                               <td>
+                                <a href="/File/Delete?id=${item.id}" class="btn btn-sm btn-danger">Excluir</a>
+                        <button type="button" onclick="uploadFile('${item.id}')"  class="btn btn-sm btn-warning">Editar</button>
+                                        <a href="/File/DownloadFile?fileId=${item.id}" class="btn btn-sm btn-primary">Download</a>
+                               </td>
                     </tr>`
                 $(`#rows`).append(row);
             }
         })
     }
+    function loadXML(id) {
+            $.ajax({
+                method: 'GET',
+                async: false,
+                url: `/File/GetXMLObject`,
+                data: { fileId: id },
+                success: (res) => {
+                    fromIde(res.infNFe);
+                    fromDet(res.infNFe.det);
+                    fromCadastro(res.infNFe);
+                    var total = res.infNFe.total.issqNtot ? res.infNFe.total.issqNtot : res.infNFe.total.icmsTot
+                    fromTotal(total);
+                    $(`#modal`).modal('show');
+                }
+            });
+    }
+        function fromIde(nfe) {
+            var date = new Date(nfe.ide.dhEmi).toString('dd/MM/yyyy HH:mm');
+            var str = `<tr>
+                                            <td><span class="h44">Chave</span></td>
+                                            <td>#chave#</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="h44">Numero</span></td>
+                                            <td>#nnf#</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="h44">Serie</span></td>
+                                            <td>#serie#</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="h44">Modelo</span></td>
+                                            <td>#mod#</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="h44">Data</span></td>
+                                            <td>#data#</td>
+                                        </tr>`;
+            str = str.replace(`#chave#`, nfe.id)
+                .replace(`#nnf#`, nfe.ide.nNF)
+                .replace(`#serie#`, nfe.ide.serie)
+                .replace(`#mod#`, nfe.ide.mod)
+                .replace(`#data#`, date);
+            $(`#tIde`).html(str);
+        }
+        function fromCadastro(nfe) {
+            $(`#tEmiDest`).html(``);
+            $(`#tEmiDest`).append(`<tr><td>Nome Fantasia</td><td>${nfe.emit.xFant}</td><td>--</td></tr>`);
+            $(`#tEmiDest`).append(`<tr><td>Razao Social</td><td>${nfe.emit.xNome}</td><td>${nfe.dest.xNome}</td></tr>`);
+            $(`#tEmiDest`).append(`<tr><td>CNPJ / CPF</td><td>${nfe.emit.cpf || nfe.emit.cnpj}</td><td>${nfe.dest.cnpj || nfe.dest.cpf}</td></tr>`);
+            $(`#tEmiDest`).append(`<tr><td>IE</td><td>${nfe.emit.ie || '--'}</td><td>${nfe.dest.ie}</td></tr>`);
+            $(`#tEmiDest`).append(`<tr><td>Telefone</td><td>${nfe.emit.enderEmit.fone || '--'}</td><td>${nfe.dest.enderDest.fone || '--'}</td></tr>`);
+            $(`#tEmiDest`).append(`<tr><td>Endereco</td><td>${buildEndereco(nfe.emit.enderEmit)}</td><td>${buildEndereco(nfe.dest.enderDest)} </td></tr > `);
+        }
+    function buildEndereco(e) {
+        return `${e.xLgr}, ${e.nro}  - ${e.xBairro} / ${e.xMun}`;
+    }
+        function fromDet(det) {
+            $(`#tDet`).html('');
+            det.forEach((item) => {
+                var str = `<tr><td>${item.prod.cProd}</td><td>${item.prod.xProd}</td><td>${item.prod.qCom.toFixed(2)}</td><td>${item.prod.vUnCom.toFixed(2)}</td><td>${item.prod.vProd.toFixed(2)}</td></tr>`;
+                $(`#tDet`).append(str);
+            });
+
+        }
+        function fromTotal(total) {
+            $(`#tTotal`).html('');
+            $(`#tTotal`).append(`<tr><td>Produtos (+)</td><td>R$ ${total.vProd?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>ICMS (+)</td><td>R$ ${total.vICMS?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>ST (+)</td><td>R$ ${total.vST?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>IPI (+)</td><td>R$ ${total.vIPI?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>PIS (+)</td><td>R$ ${total.vPIS?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>COFINS (+)</td><td>R$ ${total.vCOFINS?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>Frete (+)</td><td>R$ ${total.vFrete?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>Descontos (-)</td><td>R$ ${total.vDesc?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>Outros (+)</td><td>R$ ${total.vOutro?.toFixed(2) || '0.00'}</td></tr>`);
+            $(`#tTotal`).append(`<tr><td>Total (=)</td><td>R$ ${total.vNF?.toFixed(2) || '0.00'}</td></tr>`);
+        }
 </script>
 }

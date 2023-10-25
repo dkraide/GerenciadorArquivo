@@ -1,14 +1,16 @@
 ﻿@using Communication.DTOs;
 <div class="container">
     <h3>Usuarios cadastrados</h3>
-    <a class="btn btn-success col-3" href="/User/Create" style="margin-top:10px;">Novo Usuario</a>
+    <div class="d-flex justify-content-end">
+        <a class="btn btn-success col-3" href="/User/Create" style="margin-top:10px;">Novo Usuario</a>
+    </div>
     <hr />
     <table id="tb" class="table table-hover">
         <thead class="thead-dark">
             <tr>
-                <th>#</th>
                 <th>Nome</th>
                 <th>Usuario</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -17,11 +19,11 @@
                 @foreach (var x in (List<UserDTO>)ViewBag.Users)
                 {
                     <tr>
+                        <td>@x.Name</td>
+                        <td>@x.UserName</td>
                         <td>
                             <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-warning">Editar</a>
                         </td>
-                        <td>@x.Name</td>
-                        <td>@x.UserName</td>
                     </tr>
                 }
             }

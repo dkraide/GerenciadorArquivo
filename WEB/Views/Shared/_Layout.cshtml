@@ -10,44 +10,36 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <div style="margin-right:5px">Bem Vindo, @User.Identity.Name</div>
-                }
-                else
-                {
-                    <a class="navbar-brand" asp-area="" asp-page="/Home/Index">Gerenciador de Arquivos</a>
-                }
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/File/Index">Gerenciador de Arquivos</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <div class="collapse navbar-collapse" id="navbarText">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="File" asp-action="Index">Arquivos</a>
+                            <a class="nav-link" asp-controller="File" asp-action="Index">Arquivos</a>
                         </li>
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="User" asp-action="Index">Usuarios</a>
-                            </li>
-                        }
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="User" asp-action="Logout">Sair</a>
+                                <a class="nav-link" asp-controller="User" asp-action="Index">Usuarios</a>
                             </li>
                         }
                     </ul>
+                    <span class="navbar-text">
+                        Bem Vindo, @User.Identity.Name
+                    </span>
+                    <span class="navbar-text    ">
+                        <a class="nav-link" asp-controller="User" asp-action="Logout">Sair</a>
+                    </span>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container mt-3">
+        <main role="main" class="container" >
             @RenderBody()
         </main>
     </div>
@@ -61,6 +53,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="/datejs/date.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

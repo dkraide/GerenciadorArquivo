@@ -1,13 +1,9 @@
 ﻿using Communication.Constants;
-using Communication.Models;
+using Communication.Models.NFeModel;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace Communication.Utils
 {
@@ -37,6 +33,22 @@ namespace Communication.Utils
 
             string ext = Path.GetExtension(fileName);
             return Path.Combine(folder, fileId + ext);
+        }
+        public static T SerializeFromXMLString<T>(string fileXml) where T : class
+        {
+            var xmlDoc = XDocument.Parse(fileXml);
+            var xmlString = (from d in xmlDoc.Descendants()
+                             where d.Name.LocalName == typeof(T).Name
+                             select d).FirstOrDefault();
+
+            if (xmlString == null)
+                throw new Exception(String.Format("Nenhum objeto NFe encontrado no arquivo {1}!", fileXml));
+
+            var ser = XmlSerializer.FromTypes(new[] { typeof(T) })[0];
+            var str = xmlString.ToString();
+
+            using (var sr = new StringReader(str))
+                return (T)ser.Deserialize(sr);
         }
     }
 }

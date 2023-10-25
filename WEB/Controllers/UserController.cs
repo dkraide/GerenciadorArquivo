@@ -69,6 +69,11 @@ namespace WEB.Controllers
             {
                 return RedirectToAction("Index", "File");
             }
+            var u = await _userManager.FindByNameAsync(user.UserName);
+            if (u == null)
+                ModelState.AddModelError("UserName", "User not found");
+            else
+                ModelState.AddModelError("PasswordHash", "Incorrect password");
             return View(user);
         }
 
@@ -90,7 +95,7 @@ namespace WEB.Controllers
 
                 var res = await _userService.Create(user);
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "File");
             }
             catch(Exception ex)
             {
